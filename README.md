@@ -4,11 +4,11 @@ A toolkit for training, fine-tuning, and exporting models with Horizon HEAL. The
 
 ## Installation
 
-a. Request access to https://github.com/HorizonRobotics/Heal and clone the repository locally.
+1. Request access to https://github.com/HorizonRobotics/Heal and clone the repository locally.
 
-b. Configure Heal according to the instructions in `Heal/README.md`.
+2. Configure Heal according to the instructions in `Heal/README.md`.
 
-c. Prepare the nuScenes dataset for calibration and place it in `data/nuscenes`.
+3. Prepare the nuScenes dataset for calibration and place it in `data/nuscenes`.
 
 ## Usage
 
@@ -51,6 +51,55 @@ bash scripts/compile_bevfusion_s600.sh --samples data/samples \
 bash scripts/compile_bevfusion_s600.sh --from-hbir outputs/bevfusion_s600_100/qat.bc \
   --output outputs/bevfusion_s600_recompile
 ```
+
+## Board verification
+
+1. Prepare the board demo as follows:
+
+    ```bash
+    bash scripts/bevfusion_board_demo.sh prepare
+    ```
+
+2. Copy `outputs/bevfusion_board_demo` to the board
+
+3. Compile and run the demo as follow:
+
+    ```bash
+    cd bevfusion_board_demo
+    
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j4
+    
+    # Warm up 5 times, then run 50 timed iterations; `board_results` must be a new directory.
+    ./build/board_demo model.hbm inputs board_results 50 5
+    ```
+
+4. Copy the result to the host, then decode and visualize it as follows:
+
+   ```bash
+   bash scripts/bevfusion_board_demo.sh decode --board-output board_results
+   bash scripts/bevfusion_board_demo.sh visualize
+   ```
+
+## Benchmarking
+
+
+| Platform                    | mean  | P50   | P95   | min/max  |
+| --------------------------- | ----- | ----- | ----- | -------- |
+| host (5070TI, float)        | ~65ms | ~64ms | ~72ms | ~59/73ms |
+| board (RDK S600, quantized) | ~20ms | ~20ms | ~20ms | ~19/20ms |
+
+## Visualization
+
+### On-Host Visualization (5070TI, Float Model)
+
+![image-20261127161546785](./README.assets/image-20261127161546785.png)
+
+### On-Board Visualization (RDK S600, Quantized Model)
+
+![image-20261127161353078](./README.assets/image-20261127161353078.png)
+
+
 
 ## Troubleshooting
 
